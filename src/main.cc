@@ -23,14 +23,15 @@ static void __sigint_handler(int signo) {
 }
 
 
-int debug_flag;
-int monitor_flag;
+static int debug_flag, monitor_flag, help_flag;
 
 static struct option long_options[] = {
 {"source", required_argument, 0, 's'},
 {"frequency", required_argument, 0, 'f'},
+{"dot-length", required_argument, 0, 'L'},
 {"debug", no_argument, &debug_flag, 1},
 {"monitor", no_argument, &monitor_flag, 1},
+{"help", no_argument, &help_flag, 1},
 {0,0,0,0}
 };
 
@@ -41,8 +42,8 @@ int main(int argc, char *argv[])
   /*
    * Parse command line options.
    */
-  bool has_source=false, has_freq=false;
-  std::string source_str, freq_str;
+  bool has_source=false, has_freq=false, has_dot_length=false;
+  std::string source_str, freq_str, dot_length_str;
 
   while (true) {
     int option_index = 0;
@@ -63,12 +64,39 @@ int main(int argc, char *argv[])
       freq_str = optarg;
       break;
 
+    case 'L':
+      has_dot_length = true;
+      dot_length_str = optarg;
+      break;
+
     case '?':
       break;
 
     default:
       abort();
     }
+  }
+
+  if (help_flag) {
+    std::cout << "A QRSS receiver application using libsdr." << std::endl << std::endl
+              << "Usage: sdr_qrss [OPTIONS]" << std::endl << std::endl
+              << "--source SOURCE, -s SOURCE" << std::endl
+              << "  Selects the data source. Possible options are 'audio' or 'rtl'." << std::endl
+              << "  'audio' selects the sound-card and 'rtl' a RTLXXXX USB device as " << std::endl
+              << "  the data source. If 'rtl' is used the frequency must be specified" << std::endl
+              << "  with the '--frequency' or '-f' option. (default 'audio')" << std::endl << std::endl
+              << "--frequency FREQ, -f FREQ" << std::endl
+              << "  Specifies the center frequency (in conjecture with an RTLXXXX" << std::endl
+              << "  device) in Hz." << std::endl << std::endl
+              << "--dot-length DURATION" << std::endl
+              << "  Specifies the dot length in seconds. (default 3)" << std::endl << std::endl
+              << "--debug" << std::endl
+              << "  Enables verbose output." << std::endl << std::endl
+              << "--monitor" << std::endl
+              << "  Plays the received audio signal back." << std::endl << std::endl
+              << "--help" << std::endl
+              << "  Print this text." << std::endl;
+    return 0;
   }
 
   // Register handler:
@@ -124,7 +152,14 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  QRSS qrss(700, 3, 300);
+  double Fbfo       = 700;
+  double dot_length = 3;
+  double spec_width = 300;
+  if (has_dot_length) {
+    dot_length = atof(dot_length_str.c_str());
+  }
+
+  QRSS qrss(Fbfo, dot_length, spec_width);
   src->connect(&qrss);
 
   if (monitor_flag) {
