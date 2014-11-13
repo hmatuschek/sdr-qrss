@@ -104,6 +104,7 @@ QRSS::process(const Buffer<int16_t> &buffer, bool allow_overwrite) {
         _currPSD[j] = _fft_out[j].real()*_fft_out[j].real()
             + _fft_out[j].imag()*_fft_out[j].imag();
       }
+      std::cerr << "Update spectrum..." << std::endl;
       // Notify spectrum views about the new spectrum.
       emit spectrumUpdated();
     }

@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
   // Assemble processing chain
   PortSource< int16_t > src(12000, 2048);
   AGC< int16_t > agc;
-  QRSS qrss(700, 3, 200);
+  QRSS qrss(700, 3, 300);
 
   src.connect(&agc);
   agc.connect(&qrss);
@@ -47,7 +47,8 @@ int main(int argc, char *argv[])
 
   QApplication app(argc, argv);
   QMainWindow        *win       = new QMainWindow();
-  gui::WaterFallView *spec_view = new gui::WaterFallView(&qrss);
+  gui::WaterFallView *spec_view = new gui::WaterFallView(&qrss, 640, gui::WaterFallView::BOTTOM_UP);
+
   win->setCentralWidget(spec_view);
   win->setMinimumSize(640, 240);
 
