@@ -90,16 +90,16 @@ QRSS::process(const Buffer<int16_t> &buffer, bool allow_overwrite) {
     // Shift frequency and sub-sample by 16 (for spectrum)
     _curr_avg += _fshift.applyFrequencyShift(buffer[i]); _avg_count++;
     if (_subsample == _avg_count) {
-      _fft_in[_N_fft] = _curr_avg/float( _subsample * (1<<15) );
+      _fft_in[_fft_count] = _curr_avg/float( _subsample * (1<<15) );
       _curr_avg=0; _avg_count=0; _fft_count++;
     }
 
-    // If 512 samples have been received -> update spectrum
+    // If _N_fft samples have been received -> update spectrum
     if (_N_fft == _fft_count) {
       _fft_count = 0;
       // Compute FFT
       (*_fft)();
-      // Compute PSD and update avg PSD, PSDs
+      // Compute PSD
       for (size_t j=0; j<_N_fft; j++) {
         _currPSD[j] = _fft_out[j].real()*_fft_out[j].real()
             + _fft_out[j].imag()*_fft_out[j].imag();
