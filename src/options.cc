@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <sstream>
+#include <string.h>
 
 #include <iostream>
 
@@ -149,6 +150,12 @@ Options::Value::Value(const std::string &value)
 
 Options::Value::~Value() {
   if (STRING == _type) { free(_value.as_string); }
+}
+
+Options::Value::Value(const Value &other)
+  : _type(other._type), _value(other._value)
+{
+  if (STRING == _type) { _value.as_string = strdup(_value.as_string); }
 }
 
 const Options::Value &

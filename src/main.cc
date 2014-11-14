@@ -36,6 +36,8 @@ static Options::Definition option_definitions[] = {
    "Specifies the width of the visible spectrum in Hz. Default: 300Hz"},
   {"bfo-frequency", 0, Options::FLOAT,
    "Specifies the BFO frequency in Hz. Default: 700 Hz"},
+  {"agc", 0, Options::FLAG,
+   "Enables the AGC."},
   {"debug", 0, Options::FLAG,
    "Enables the debug output."},
   {"monitor", 0, Options::FLAG,
@@ -103,7 +105,9 @@ int main(int argc, char *argv[])
   try {
     if ((! options.has("source")) || ("audio" == options.get("source").toString()) ) {
       port_src = new PortSource< int16_t >(12000, 512);
-      src = agc = new AGC< int16_t >(); agc->enable(true);
+      src = agc = new AGC< int16_t >();
+      if (options.has("agc")) { agc->enable(true); }
+      else { agc->enable(false); }
       port_src->connect(agc);
       queue.addIdle(port_src, &PortSource< int16_t >::next);
     } else if (options.has("source") && ("rtl" == options.get("source").toString())) {
@@ -115,6 +119,8 @@ int main(int argc, char *argv[])
       ccast    = new AutoCast< std::complex<int16_t> >();
       baseband = new IQBaseBand< int16_t >(0, Fbfo, spec_width, 16, 1, 12000);
       src = demod = new USBDemod< int16_t >();
+      if (options.has("agc")) { rtl_src->enableAGC(true); }
+      else { rtl_src->enableAGC(false); }
       rtl_src->connect(ccast);
       ccast->connect(baseband, true);
       baseband->connect(demod);
