@@ -10,8 +10,7 @@
 #include <QMainWindow>
 #include <QThread>
 
-#include <getopt.h>
-
+#include "options.hh"
 #include "qrss.hh"
 
 
@@ -23,18 +22,28 @@ static void __sigint_handler(int signo) {
 }
 
 
-static int debug_flag, monitor_flag, help_flag;
-
-static struct option long_options[] = {
-{"source", required_argument, 0, 's'},
-{"frequency", required_argument, 0, 'f'},
-{"dot-length", required_argument, 0, 'L'},
-{"debug", no_argument, &debug_flag, 1},
-{"monitor", no_argument, &monitor_flag, 1},
-{"help", no_argument, &help_flag, 1},
-{0,0,0,0}
+static Options::Definition option_definitions[] = {
+  {"source", 's', Options::ANY,
+   "Specifies the input source. Possible arguments are 'audio' and 'rtl', "
+   "where 'audio' specifies the sound card as the input source while 'rtl' "
+   "specifies an RTL2832 USB dongle as the input source. "
+   "Default: 'audio'"},
+  {"frequency", 'f', Options::FLOAT,
+   "Specifies the center frequency (in Hz), if a RTL2832 source is used."},
+  {"dot-length", 0, Options::FLOAT,
+   "Specifies the QRSS dot length is seconds. Default: 3s"},
+  {"width", 0, Options::FLOAT,
+   "Specifies the width of the visible spectrum in Hz. Default: 300Hz"},
+  {"bfo-frequency", 0, Options::FLOAT,
+   "Specifies the BFO frequency in Hz. Default: 700 Hz"},
+  {"debug", 0, Options::FLAG,
+   "Enables the debug output."},
+  {"monitor", 0, Options::FLAG,
+   "Enables the audio monitoring."},
+  {"help", 'h', Options::FLAG,
+   "Prints this text."},
+  {0,0,Options::FLAG,0}
 };
-
 
 
 int main(int argc, char *argv[])
@@ -42,60 +51,12 @@ int main(int argc, char *argv[])
   /*
    * Parse command line options.
    */
-  bool has_source=false, has_freq=false, has_dot_length=false;
-  std::string source_str, freq_str, dot_length_str;
-
-  while (true) {
-    int option_index = 0;
-    int c = getopt_long(argc, argv, "s:f:", long_options, &option_index);
-    if (-1 == c) { break; }
-
-    switch (c) {
-    case 0:
-      break;
-
-    case 's':
-      has_source = true;
-      source_str = optarg;
-      break;
-
-    case 'f':
-      has_freq = true;
-      freq_str = optarg;
-      break;
-
-    case 'L':
-      has_dot_length = true;
-      dot_length_str = optarg;
-      break;
-
-    case '?':
-      break;
-
-    default:
-      abort();
-    }
-  }
-
-  if (help_flag) {
-    std::cout << "A QRSS receiver application using libsdr." << std::endl << std::endl
-              << "Usage: sdr_qrss [OPTIONS]" << std::endl << std::endl
-              << "--source SOURCE, -s SOURCE" << std::endl
-              << "  Selects the data source. Possible options are 'audio' or 'rtl'." << std::endl
-              << "  'audio' selects the sound-card and 'rtl' a RTLXXXX USB device as " << std::endl
-              << "  the data source. If 'rtl' is used the frequency must be specified" << std::endl
-              << "  with the '--frequency' or '-f' option. (default 'audio')" << std::endl << std::endl
-              << "--frequency FREQ, -f FREQ" << std::endl
-              << "  Specifies the center frequency (in conjecture with an RTLXXXX" << std::endl
-              << "  device) in Hz." << std::endl << std::endl
-              << "--dot-length DURATION" << std::endl
-              << "  Specifies the dot length in seconds. (default 3)" << std::endl << std::endl
-              << "--debug" << std::endl
-              << "  Enables verbose output." << std::endl << std::endl
-              << "--monitor" << std::endl
-              << "  Plays the received audio signal back." << std::endl << std::endl
-              << "--help" << std::endl
-              << "  Print this text." << std::endl;
+  Options options;
+  if (! Options::parse(option_definitions, argc, argv, options)) { return -1; }
+  if (options.has("help")) {
+    std::cout << "sdr-qrss -- A QRSS receiver using libsdr." << std::endl << std::endl
+              << " Usage: sdr-qrss [OPTIONS]" << std::endl << std::endl;
+    Options::print_help(std::cout, option_definitions);
     return 0;
   }
 
@@ -109,10 +70,22 @@ int main(int argc, char *argv[])
   Queue &queue = Queue::get();
   PortAudio::init();
 
-  if (debug_flag) {
+  if (options.has("debug")) {
     sdr::Logger::get().addHandler(
           new sdr::StreamLogHandler(std::cerr, sdr::LOG_DEBUG));
+  } else {
+    sdr::Logger::get().addHandler(
+          new sdr::StreamLogHandler(std::cerr, sdr::LOG_WARNING));
   }
+
+
+  double Fbfo       = 700;
+  double dot_length = 3;
+  double spec_width = 300;
+
+  if (options.has("dot-length")) { dot_length = options.get("dot-length").toFloat(); }
+  if (options.has("width")) { spec_width = options.get("width").toFloat(); }
+  if (options.has("bfo-frequency")) { Fbfo = options.get("bfo-frequency").toFloat(); }
 
   /*
    * Assemble processing chain
@@ -127,42 +100,42 @@ int main(int argc, char *argv[])
   PortSink              *audio_sink = 0;
 
   // Default source == "audio"
-  if ((! has_source) || ("audio" == source_str) ) {
-    port_src = new PortSource< int16_t >(12000, 512);
-    src = agc = new AGC< int16_t >(); agc->enable(true);
-    port_src->connect(agc);
-    queue.addIdle(port_src, &PortSource< int16_t >::next);
-  } else if (has_source && ("rtl" == source_str)) {
-    if (! has_freq) {
-      std::cerr << "RTL: RX Frequency not specified!" << std::endl;
+  try {
+    if ((! options.has("source")) || ("audio" == options.get("source").toString()) ) {
+      port_src = new PortSource< int16_t >(12000, 512);
+      src = agc = new AGC< int16_t >(); agc->enable(true);
+      port_src->connect(agc);
+      queue.addIdle(port_src, &PortSource< int16_t >::next);
+    } else if (options.has("source") && ("rtl" == options.get("source").toString())) {
+      if (! options.has("frequency")) {
+        std::cerr << "RTL: RX Frequency not specified!" << std::endl;
+        return -1;
+      }
+      rtl_src  = new RTLSource(options.get("frequency").toFloat()-Fbfo, 800e3);
+      ccast    = new AutoCast< std::complex<int16_t> >();
+      baseband = new IQBaseBand< int16_t >(0, Fbfo, spec_width, 16, 1, 12000);
+      src = demod = new USBDemod< int16_t >();
+      rtl_src->connect(ccast);
+      ccast->connect(baseband, true);
+      baseband->connect(demod);
+      Queue::get().addStart(rtl_src, &RTLSource::start);
+      Queue::get().addStop(rtl_src, &RTLSource::stop);
+    } else {
+      std::cerr << "Unkown source specification: '" << options.get("source").toString()
+                << "'. Possible values 'audio', 'rtl'" << std::endl;
       return -1;
     }
-    rtl_src  = new RTLSource(atof(freq_str.c_str())-700, 800e3);
-    ccast    = new AutoCast< std::complex<int16_t> >();
-    baseband = new IQBaseBand< int16_t >(0, 700, 300, 16, 1, 12000);
-    src = demod = new USBDemod< int16_t >();
-    rtl_src->connect(ccast);
-    ccast->connect(baseband, true);
-    baseband->connect(demod);
-    Queue::get().addStart(rtl_src, &RTLSource::start);
-    Queue::get().addStop(rtl_src, &RTLSource::stop);
-  } else {
-    std::cerr << "Unkown source specification: '" << source_str
-              << "'. Possible values 'audio', 'rtl'" << std::endl;
+  } catch (SDRError &err) {
+    LogMessage msg(LOG_ERROR); msg << err.what();
+    msg << std::endl << "Abort.";
+    Logger::get().log(msg);
     return -1;
-  }
-
-  double Fbfo       = 700;
-  double dot_length = 3;
-  double spec_width = 300;
-  if (has_dot_length) {
-    dot_length = atof(dot_length_str.c_str());
   }
 
   QRSS qrss(Fbfo, dot_length, spec_width);
   src->connect(&qrss);
 
-  if (monitor_flag) {
+  if (options.has("monitor")) {
     audio_sink = new PortSink();
     src->connect(audio_sink);
   }

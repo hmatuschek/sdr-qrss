@@ -76,7 +76,7 @@ QRSS::config(const Config &src_cfg) {
       << " Refresh period: " << _N_fft*_subsample/_samplerate << "s" << std::endl
       << " Sub-sample: " << _subsample << std::endl
       << " FFT length: " << _N_fft << std::endl
-      << " Freq. res: " << _samplerate/(_subsample*_N_fft) << "Hz" << std::endl;
+      << " Freq. res: " << _samplerate/(_subsample*_N_fft) << "Hz";
   Logger::get().log(msg);
 
   emit spectrumConfigured();
