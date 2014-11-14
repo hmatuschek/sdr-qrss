@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
       }
       rtl_src  = new RTLSource(options.get("frequency").toFloat()-Fbfo, 800e3);
       ccast    = new AutoCast< std::complex<int16_t> >();
-      baseband = new IQBaseBand< int16_t >(0, Fbfo, spec_width, 16, 1, 12000);
+      baseband = new IQBaseBand< int16_t >(0, Fbfo, spec_width, 17, 1, 12000);
       src = demod = new USBDemod< int16_t >();
       if (options.has("agc")) { rtl_src->enableAGC(true); }
       else { rtl_src->enableAGC(false); }
