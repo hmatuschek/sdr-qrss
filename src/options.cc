@@ -98,9 +98,9 @@ Options::print_help(std::ostream &stream, const Definition defs[])
   for (const Definition *def = defs; def->name; def++) {
     stream << "--" << def->name;
     if (def->short_name) { stream << ", -" << def->short_name; }
-    if (INTEGER != def->type) { stream << " INTEGER"; }
-    else if (FLOAT != def->type) { stream << " FLOAT"; }
-    else if (ANY != def->type) { stream << " VALUE"; }
+    if (INTEGER == def->type) { stream << " INTEGER"; }
+    else if (FLOAT == def->type) { stream << " FLOAT"; }
+    else if (ANY == def->type) { stream << " VALUE"; }
     stream << std::endl;
     if (def->help) {
       std::istringstream iss(def->help);
