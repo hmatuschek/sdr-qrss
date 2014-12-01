@@ -150,7 +150,8 @@ int main(int argc, char *argv[])
    * Init GUI
    */
   QMainWindow        *win       = new QMainWindow();
-  gui::WaterFallView *spec_view = new gui::WaterFallView(&qrss, 640, gui::WaterFallView::RIGHT_LEFT);
+  gui::WaterFallView *spec_view = new gui::WaterFallView(
+        &qrss, 640, gui::WaterFallView::BOTTOM_UP);
 
   win->setCentralWidget(spec_view);
   win->setMinimumSize(640, 480);
