@@ -34,8 +34,10 @@ static Options::Definition option_definitions[] = {
    "Specifies the QRSS dot length is seconds. Default: 3s"},
   {"width", 0, Options::FLOAT,
    "Specifies the width of the visible spectrum in Hz. Default: 300Hz"},
+  {"history", 0, Options::INTEGER,
+   "Specifies the number of frames for the history (x-axis) of the spectum view."},
   {"bfo-frequency", 0, Options::FLOAT,
-   "Specifies the BFO frequency in Hz. Default: 700 Hz"},
+   "Specifies the BFO frequency in Hz. Default: 800 Hz"},
   {"agc", 0, Options::FLAG,
    "Enables the AGC."},
   {"debug", 0, Options::FLAG,
@@ -81,9 +83,10 @@ int main(int argc, char *argv[])
   }
 
 
-  double Fbfo       = 700;
+  double Fbfo       = 800;
   double dot_length = 3;
   double spec_width = 300;
+  int    hist       = 800;
 
   if (options.has("dot-length")) { dot_length = options.get("dot-length").toFloat(); }
   if (options.has("width")) { spec_width = options.get("width").toFloat(); }
@@ -150,11 +153,11 @@ int main(int argc, char *argv[])
    * Init GUI
    */
   QMainWindow        *win       = new QMainWindow();
-  gui::WaterFallView *spec_view = new gui::WaterFallView(
-        &qrss, 640, gui::WaterFallView::BOTTOM_UP);
+  gui::WaterFallView *spec_view = new gui::WaterFallView(&qrss, hist, gui::WaterFallView::RIGHT_LEFT);
 
+  win->setWindowTitle("sdr-qrss");
   win->setCentralWidget(spec_view);
-  win->setMinimumSize(640, 480);
+  win->setMinimumSize(hist, 480);
   win->show();
 
   // GO
