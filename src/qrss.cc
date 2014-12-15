@@ -54,6 +54,12 @@ QRSS::config(const Config &src_cfg) {
   _fshift.setFrequencyShift(-_Fbfo);
   _fshift.setSampleRate(_samplerate);
 
+  // Trigger reconfig of spectrum
+  configSpectrum();
+}
+
+void
+QRSS::configSpectrum() {
   // Compute sub-sampling
   _subsample = _samplerate/_width;
   _curr_avg = 0; _avg_count = 0; _N_fft = 0;
@@ -109,5 +115,39 @@ QRSS::process(const Buffer<int16_t> &buffer, bool allow_overwrite) {
       emit spectrumUpdated();
     }
   }
+}
+
+
+double
+QRSS::Fbfo() const {
+  return _Fbfo;
+}
+
+void
+QRSS::setFbfo(double F) {
+  _Fbfo = F;
+  _fshift.setFrequencyShift(-F);
+}
+
+double
+QRSS::dotLength() const {
+  return _dotlen;
+}
+
+void
+QRSS::setDotLength(double len) {
+  _dotlen = len;
+  configSpectrum();
+}
+
+double
+QRSS::width() const {
+  return _width;
+}
+
+void
+QRSS::setWidth(double width) {
+  _width = width;
+  configSpectrum();
 }
 

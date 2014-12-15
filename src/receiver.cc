@@ -88,3 +88,33 @@ sdr::gui::SpectrumProvider *
 Receiver::spectrum() {
   return &_qrss;
 }
+
+double
+Receiver::bfoFrequency() const {
+  return _qrss.Fbfo();
+}
+
+void
+Receiver::setBFOFrequency(double F) {
+  _qrss.setFbfo(F);
+}
+
+double
+Receiver::dotLength() const {
+  return _qrss.dotLength();
+}
+
+void
+Receiver::setDotLength(double len) {
+  _qrss.setDotLength(len);
+}
+
+double
+Receiver::spectrumWidth() const {
+  return _qrss.width();
+}
+
+void
+Receiver::setSpectrumWidth(double width) {
+  _qrss.setWidth(width);
+}

@@ -20,6 +20,8 @@ protected slots:
   void onQueueStartStop(bool start);
   void onSourceSelected(int idx);
   void onBFOFreqChanged();
+  void onDotLengthChanged();
+  void onWidthChanged();
 
 protected:
   Receiver *_receiver;
@@ -27,6 +29,8 @@ protected:
   QVBoxLayout *_sourceLayout;
   QComboBox *_sourceSelect;
   QLineEdit *_Fbfo;
+  QLineEdit *_dotLen;
+  QLineEdit *_width;
 };
 
 #endif // MAINWINDOW_HH

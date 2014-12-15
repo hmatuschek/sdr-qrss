@@ -31,6 +31,20 @@ public:
   /** Processes the given buffer. */
   virtual void process(const Buffer<int16_t> &buffer, bool allow_overwrite);
 
+  /** Returns the BFO frequency. */
+  double Fbfo() const;
+  /** Sets the BFO frequency. */
+  void setFbfo(double F);
+
+  double dotLength() const;
+  void setDotLength(double len);
+
+  double width() const;
+  void setWidth(double width);
+
+protected:
+  /** (Re-) Configures the spectrum. */
+  void configSpectrum();
 
 protected:
   /** BFO frequency. */

@@ -49,14 +49,29 @@ MainWindow::MainWindow(Receiver *rx, QWidget *parent) :
   QFormLayout *cfgLayout = new QFormLayout();
   cfgBox->setLayout(cfgLayout);
 
-  _Fbfo = new QLineEdit("800");
-  cfgLayout->addRow("BFO Freq. (Hz)", _Fbfo);
+  _Fbfo = new QLineEdit(QString::number(_receiver->bfoFrequency()));
+  QDoubleValidator *FbfoVal = new QDoubleValidator();
+  _Fbfo->setValidator(FbfoVal);
+  cfgLayout->addRow("BFO freq. (Hz)", _Fbfo);
+
+  _dotLen = new QLineEdit(QString::number(_receiver->dotLength()));
+  QDoubleValidator *dotLenVal = new QDoubleValidator();
+  dotLenVal->setBottom(0.01); _dotLen->setValidator(dotLenVal);
+  cfgLayout->addRow("Dot length (s)", _dotLen);
+
+  _width = new QLineEdit(QString::number(_receiver->spectrumWidth()));
+  QDoubleValidator *widthVal = new QDoubleValidator();
+  widthVal->setBottom(10); widthVal->setTop(1000);
+  _width->setValidator(widthVal);
+  cfgLayout->addRow("Spec. width (Hz)", _width);
 
   setCentralWidget(splitter);
 
   QObject::connect(_queueStartStop, SIGNAL(toggled(bool)), this, SLOT(onQueueStartStop(bool)));
   QObject::connect(_sourceSelect, SIGNAL(currentIndexChanged(int)), this, SLOT(onSourceSelected(int)));
   QObject::connect(_Fbfo, SIGNAL(returnPressed()), this, SLOT(onBFOFreqChanged()));
+  QObject::connect(_dotLen, SIGNAL(returnPressed()), this, SLOT(onDotLengthChanged()));
+  QObject::connect(_width, SIGNAL(returnPressed()), this, SLOT(onWidthChanged()));
 }
 
 void
@@ -80,5 +95,15 @@ MainWindow::onSourceSelected(int idx) {
 
 void
 MainWindow::onBFOFreqChanged() {
-  /// @todo Implement.
+  _receiver->setBFOFrequency(_Fbfo->text().toDouble());
+}
+
+void
+MainWindow::onDotLengthChanged() {
+  _receiver->setDotLength(_dotLen->text().toDouble());
+}
+
+void
+MainWindow::onWidthChanged() {
+  _receiver->setSpectrumWidth(_width->text().toDouble());
 }

@@ -61,6 +61,13 @@ public:
 
   sdr::gui::SpectrumProvider *spectrum();
 
+  double bfoFrequency() const;
+  void setBFOFrequency(double F);
+  double dotLength() const;
+  void setDotLength(double len);
+  double spectrumWidth() const;
+  void setSpectrumWidth(double width);
+
 protected:
   SourceType _sourceType;
   QRSSSource *_source;
