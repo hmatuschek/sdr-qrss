@@ -1,7 +1,7 @@
 set(sdr_qrss_SOURCES main.cc options.cc
-    qrss.cc receiver.cc)
+    qrss.cc receiver.cc mainwindow.cc)
 set(sdr_qrss_MOC_HEADERS
-    qrss.hh receiver.hh)
+    qrss.hh receiver.hh mainwindow.hh)
 qt5_wrap_cpp(sdr_qrss_MOC_SOURCES ${sdr_qrss_MOC_HEADERS})
 
 set(sdr_qrss_HEADERS ${sdr_qrss_MOC_HEADERS} options.hh)

@@ -36,6 +36,7 @@ public:
   virtual QWidget *view();
 
 protected:
+  sdr::PortSource<int16_t> _src;
   QWidget *_ctrlView;
 };
 
@@ -51,7 +52,7 @@ public:
   } SourceType;
 
 public:
-  explicit Receiver(double Fbfo=800, double dotLen=3, double width=300, QObject *parent = 0);
+  explicit Receiver(QObject *parent = 0);
   virtual ~Receiver();
 
   SourceType sourceType() const;
