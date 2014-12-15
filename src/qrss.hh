@@ -7,13 +7,13 @@
 
 namespace sdr {
 
-/** Spectrum provider, extracts a spectrum +/- 100Hz around the specified BFO frequency. */
+/** Spectrum provider, extracts a spectrum +/- width (Hz) around the specified BFO frequency. */
 class QRSS: public gui::SpectrumProvider, public sdr::Sink<int16_t>
 {
   Q_OBJECT
 
 public:
-  QRSS(double Fbfo=700, double dotlen=3, double width=200);
+  QRSS(double Fbfo=800, double dotlen=3, double width=200);
 
   virtual ~QRSS();
 
