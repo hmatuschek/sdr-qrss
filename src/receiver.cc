@@ -123,11 +123,20 @@ IQAudioSource::onViewDeleted() {
  * Implementation of Receiver
  * ********************************************************************************************* */
 Receiver::Receiver(QObject *parent) :
-  QObject(parent), _sourceType(AUDIO_SOURCE), _source(0), _qrss(800, 3, 300), _monitor(true)
+  QObject(parent), _sourceType(AUDIO_SOURCE), _source(0), _qrss(800, 3, 300), _monitor(true),
+  _audioSink(), _settings("com.github.hmatuschek", "sdr-qrss")
 {
+  // Load settings from config files
+  _qrss.setFbfo(_settings.value("Fbfo", 800).toDouble());
+  _qrss.setDotLength(_settings.value("dotLength", 3).toDouble());
+  _qrss.setWidth(_settings.value("width", 300).toDouble());
+  _monitor = _settings.value("monitor", true).toBool();
+
   _source = new AudioSource(_qrss.Fbfo(), _qrss.width());
   _source->source()->connect(&_qrss);
-  _source->source()->connect(&_audioSink);
+  if (_monitor) {
+    _source->source()->connect(&_audioSink);
+  }
 }
 
 Receiver::~Receiver() {
@@ -174,6 +183,7 @@ Receiver::bfoFrequency() const {
 void
 Receiver::setBFOFrequency(double F) {
   _qrss.setFbfo(F);
+  _settings.setValue("Fbfo", F);
 }
 
 double
@@ -184,6 +194,7 @@ Receiver::dotLength() const {
 void
 Receiver::setDotLength(double len) {
   _qrss.setDotLength(len);
+  _settings.setValue("dotLength", len);
 }
 
 double
@@ -194,6 +205,7 @@ Receiver::spectrumWidth() const {
 void
 Receiver::setSpectrumWidth(double width) {
   _qrss.setWidth(width);
+  _settings.setValue("width", width);
 }
 
 bool
@@ -210,4 +222,5 @@ Receiver::setMonitor(bool enabled) {
     _source->source()->disconnect(&_audioSink);
   }
   _monitor = enabled;
+  _settings.setValue("monitor", enabled);
 }

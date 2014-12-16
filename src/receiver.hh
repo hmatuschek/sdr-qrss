@@ -2,6 +2,8 @@
 #define RECEIVER_HH
 
 #include <QObject>
+#include <QSettings>
+
 #include "qrss.hh"
 #include <libsdr/baseband.hh>
 
@@ -150,6 +152,8 @@ protected:
   bool _monitor;
   /** Audio monitor sink. */
   sdr::PortSink _audioSink;
+  /** Persistent settings. */
+  QSettings _settings;
 };
 
 #endif // RECEIVER_HH
