@@ -7,6 +7,7 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QDoubleValidator>
+#include <QCheckBox>
 
 
 MainWindow::MainWindow(Receiver *rx, QWidget *parent) :
@@ -66,6 +67,10 @@ MainWindow::MainWindow(Receiver *rx, QWidget *parent) :
   _width->setValidator(widthVal);
   cfgLayout->addRow("Spec. width (Hz)", _width);
 
+  QCheckBox *monitor = new QCheckBox();
+  monitor->setChecked(_receiver->monitor());
+  cfgLayout->addRow("Audio monitor", monitor);
+
   setCentralWidget(splitter);
 
   QObject::connect(_queueStartStop, SIGNAL(toggled(bool)), this, SLOT(onQueueStartStop(bool)));
@@ -73,6 +78,7 @@ MainWindow::MainWindow(Receiver *rx, QWidget *parent) :
   QObject::connect(_Fbfo, SIGNAL(returnPressed()), this, SLOT(onBFOFreqChanged()));
   QObject::connect(_dotLen, SIGNAL(returnPressed()), this, SLOT(onDotLengthChanged()));
   QObject::connect(_width, SIGNAL(returnPressed()), this, SLOT(onWidthChanged()));
+  QObject::connect(monitor, SIGNAL(toggled(bool)), this, SLOT(onMonitorToggled(bool)));
 }
 
 void
@@ -110,4 +116,9 @@ MainWindow::onDotLengthChanged() {
 void
 MainWindow::onWidthChanged() {
   _receiver->setSpectrumWidth(_width->text().toDouble());
+}
+
+void
+MainWindow::onMonitorToggled(bool enabled) {
+  _receiver->setMonitor(enabled);
 }

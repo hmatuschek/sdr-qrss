@@ -22,6 +22,7 @@ protected slots:
   void onBFOFreqChanged();
   void onDotLengthChanged();
   void onWidthChanged();
+  void onMonitorToggled(bool enabled);
 
 protected:
   Receiver *_receiver;

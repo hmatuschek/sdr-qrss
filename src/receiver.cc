@@ -55,10 +55,15 @@ QWidget *
 AudioSource::view() {
   if (0 == _ctrlView) {
     _ctrlView = new QLabel("No settings for audio source.");
+    QObject::connect(_ctrlView, SIGNAL(destroyed()), this, SLOT(onViewDeleted()));
   }
   return _ctrlView;
 }
 
+void
+AudioSource::onViewDeleted() {
+  _ctrlView = 0;
+}
 
 
 /* ********************************************************************************************* *
@@ -103,8 +108,14 @@ QWidget *
 IQAudioSource::view() {
   if (0 == _ctrlView) {
     _ctrlView = new QLabel("No settings for IQ audio source.");
+    QObject::connect(_ctrlView, SIGNAL(destroyed()), this, SLOT(onViewDeleted()));
   }
   return _ctrlView;
+}
+
+void
+IQAudioSource::onViewDeleted() {
+  _ctrlView = 0;
 }
 
 
@@ -112,10 +123,11 @@ IQAudioSource::view() {
  * Implementation of Receiver
  * ********************************************************************************************* */
 Receiver::Receiver(QObject *parent) :
-  QObject(parent), _sourceType(AUDIO_SOURCE), _source(0), _qrss(800, 3, 300)
+  QObject(parent), _sourceType(AUDIO_SOURCE), _source(0), _qrss(800, 3, 300), _monitor(true)
 {
   _source = new AudioSource(_qrss.Fbfo(), _qrss.width());
   _source->source()->connect(&_qrss);
+  _source->source()->connect(&_audioSink);
 }
 
 Receiver::~Receiver() {
@@ -139,6 +151,9 @@ Receiver::setSourceType(SourceType source) {
   }
   // Connect to QRSS node
   _source->source()->connect(&_qrss);
+  if (_monitor) {
+    _source->source()->connect(&_audioSink);
+  }
 }
 
 QWidget *
@@ -179,4 +194,20 @@ Receiver::spectrumWidth() const {
 void
 Receiver::setSpectrumWidth(double width) {
   _qrss.setWidth(width);
+}
+
+bool
+Receiver::monitor() const {
+  return _monitor;
+}
+
+void
+Receiver::setMonitor(bool enabled) {
+  if (enabled && !_monitor) {
+    // enable monitoring
+    _source->source()->connect(&_audioSink);
+  } else if (!enabled && _monitor) {
+    _source->source()->disconnect(&_audioSink);
+  }
+  _monitor = enabled;
 }
