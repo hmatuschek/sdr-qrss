@@ -41,6 +41,7 @@ MainWindow::MainWindow(Receiver *rx, QWidget *parent) :
 
   _sourceSelect = new QComboBox();
   _sourceSelect->addItem("Audio", Receiver::AUDIO_SOURCE);
+  _sourceSelect->addItem("IQ Audio", Receiver::IQ_AUDIO_SOURCE);
   _sourceLayout->addWidget(_sourceSelect);
   _sourceLayout->addWidget(_receiver->sourceView());
 
@@ -89,8 +90,11 @@ MainWindow::onQueueStartStop(bool start) {
 void
 MainWindow::onSourceSelected(int idx) {
   Receiver::SourceType src = Receiver::SourceType(_sourceSelect->itemData(idx).toUInt());
+  bool isRunning = sdr::Queue::get().isRunning();
+  if (isRunning) { sdr::Queue::get().stop(); sdr::Queue::get().wait(); }
   _receiver->setSourceType(src);
   _sourceLayout->addWidget(_receiver->sourceView());
+  if (isRunning) { sdr::Queue::get().start(); }
 }
 
 void
