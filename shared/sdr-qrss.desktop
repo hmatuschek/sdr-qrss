@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=SDR QRSS	
+GenericName=QRSS Receiver
+Comment=A QRSS receiver application using libsdr.
+Exec=sdr-qrss
+Icon=/usr/share/icons/sdr-qrss.svg
+Type=Application
+Categories=Education;Teaching;
+Terminal=false
+Encoding=UTF-8
