@@ -73,6 +73,17 @@ IF(NOT LIBSDR_FOUND)
   add_subdirectory(libsdr/src)
 ENDIF(NOT LIBSDR_FOUND)
 
+
+#
+# Install logo and .desktop file under Linux:
+#
+IF(UNIX AND NOT APPLE)
+ INSTALL(FILES shared/sdr-qrss.svg
+         DESTINATION share/icons)
+ INSTALL(FILES shared/sdr-qrss.desktop
+         DESTINATION share/applications)
+ENDIF(UNIX AND NOT APPLE)
+
 # Source distribution packages:
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
 set(CPACK_PACKAGE_VERSION_MINOR "1")

@@ -123,7 +123,7 @@ IQAudioSource::onViewDeleted() {
  * Implementation of Receiver
  * ********************************************************************************************* */
 Receiver::Receiver(QObject *parent) :
-  QObject(parent), _sourceType(AUDIO_SOURCE), _source(0), _agc(), _qrss(800, 3, 300), _monitor(true),
+  QObject(parent), _sourceType(AUDIO_SOURCE), _source(0), _agc(0.1, 10e3), _qrss(800, 3, 300), _monitor(true),
   _audioSink(), _settings("com.github.hmatuschek", "sdr-qrss")
 {
   // Config AGC

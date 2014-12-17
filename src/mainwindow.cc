@@ -36,7 +36,7 @@ MainWindow::MainWindow(Receiver *rx, QWidget *parent) :
   }
 
   QGroupBox *sourceBox = new QGroupBox("Source");
-  spLayout->addWidget(sourceBox);
+  spLayout->addWidget(sourceBox, 0);
   _sourceLayout = new QVBoxLayout();
   sourceBox->setLayout(_sourceLayout);
 
@@ -47,7 +47,7 @@ MainWindow::MainWindow(Receiver *rx, QWidget *parent) :
   _sourceLayout->addWidget(_receiver->sourceView());
 
   QGroupBox *cfgBox = new QGroupBox("Settings");
-  spLayout->addWidget(cfgBox);
+  spLayout->addWidget(cfgBox, 1);
   QFormLayout *cfgLayout = new QFormLayout();
   cfgBox->setLayout(cfgLayout);
 
