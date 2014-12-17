@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QLineEdit>
+#include <QTimer>
 
 #include "receiver.hh"
 
@@ -22,6 +23,9 @@ protected slots:
   void onBFOFreqChanged();
   void onDotLengthChanged();
   void onWidthChanged();
+  void onAGCToggled(bool enabled);
+  void onGainChanged();
+  void onGainUpdate();
   void onMonitorToggled(bool enabled);
 
 protected:
@@ -32,6 +36,8 @@ protected:
   QLineEdit *_Fbfo;
   QLineEdit *_dotLen;
   QLineEdit *_width;
+  QLineEdit *_gain;
+  QTimer    _gainTimer;
 };
 
 #endif // MAINWINDOW_HH

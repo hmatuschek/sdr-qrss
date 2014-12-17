@@ -59,7 +59,13 @@ QRSS::config(const Config &src_cfg) {
 }
 
 void
-QRSS::configSpectrum() {
+QRSS::configSpectrum()
+{
+  // Skip config on incomplete data
+  if (0 == _samplerate) { return; }
+  if (0 == _width) { return; }
+  if (0 == _dotlen) { return; }
+
   // Compute sub-sampling
   _subsample = _samplerate/_width;
   _curr_avg = 0; _avg_count = 0; _N_fft = 0;

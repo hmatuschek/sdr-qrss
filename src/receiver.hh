@@ -136,6 +136,14 @@ public:
   double spectrumWidth() const;
   /** Sets the spectrum width (Hz). */
   void setSpectrumWidth(double width);
+  /** Returns @c true if the AGC is enabled. */
+  bool agcEnabled() const;
+  /** Enables/Disables the AGC. */
+  void enableAGC(bool enabled);
+  /** Returns the current gain. */
+  double gain() const;
+  /** Sets the current gain. */
+  void setGain(double gain);
   /** Returns @c true if audio monitoring is enabled. */
   bool monitor() const;
   /** Enables/Disables audio monitoring. */
@@ -146,6 +154,8 @@ protected:
   SourceType _sourceType;
   /** The currently selected source instance. */
   QRSSSource *_source;
+  /** The AGC/gain node. */
+  sdr::AGC<int16_t> _agc;
   /** QRSS "demodulator" instance. */
   sdr::QRSS _qrss;
   /** If true, audio monitoring is enabled. */

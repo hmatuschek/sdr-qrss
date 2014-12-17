@@ -67,6 +67,20 @@ MainWindow::MainWindow(Receiver *rx, QWidget *parent) :
   _width->setValidator(widthVal);
   cfgLayout->addRow("Spec. width (Hz)", _width);
 
+  QCheckBox *agc = new QCheckBox("AGC");
+  agc->setChecked(_receiver->agcEnabled());
+  _gain = new QLineEdit(QString::number(10*std::log10(_receiver->gain())));
+  QDoubleValidator *gainVal = new QDoubleValidator();
+  gainVal->setBottom(0); _gain->setValidator(gainVal);
+  _gain->setEnabled(!_receiver->agcEnabled());
+  _gainTimer.setInterval(500);
+  _gainTimer.setSingleShot(false);
+
+  QVBoxLayout *gainLayout = new QVBoxLayout();
+  gainLayout->addWidget(agc);
+  gainLayout->addWidget(_gain);
+  cfgLayout->addRow("Gain [dB]", gainLayout);
+
   QCheckBox *monitor = new QCheckBox();
   monitor->setChecked(_receiver->monitor());
   cfgLayout->addRow("Audio monitor", monitor);
@@ -78,7 +92,12 @@ MainWindow::MainWindow(Receiver *rx, QWidget *parent) :
   QObject::connect(_Fbfo, SIGNAL(returnPressed()), this, SLOT(onBFOFreqChanged()));
   QObject::connect(_dotLen, SIGNAL(returnPressed()), this, SLOT(onDotLengthChanged()));
   QObject::connect(_width, SIGNAL(returnPressed()), this, SLOT(onWidthChanged()));
+  QObject::connect(agc, SIGNAL(toggled(bool)), this, SLOT(onAGCToggled(bool)));
+  QObject::connect(_gain, SIGNAL(returnPressed()), this, SLOT(onGainChanged()));
   QObject::connect(monitor, SIGNAL(toggled(bool)), this, SLOT(onMonitorToggled(bool)));
+  QObject::connect(&_gainTimer, SIGNAL(timeout()), this, SLOT(onGainUpdate()));
+
+  if (_receiver->agcEnabled()) { _gainTimer.start(); }
 }
 
 void
@@ -116,6 +135,24 @@ MainWindow::onDotLengthChanged() {
 void
 MainWindow::onWidthChanged() {
   _receiver->setSpectrumWidth(_width->text().toDouble());
+}
+
+void
+MainWindow::onAGCToggled(bool enabled) {
+  _receiver->enableAGC(enabled);
+  _gain->setEnabled(!enabled);
+  if (enabled) { _gainTimer.start(); }
+  else { _gainTimer.stop(); }
+}
+
+void
+MainWindow::onGainChanged() {
+  _receiver->setGain(std::pow(10, _gain->text().toDouble()/10));
+}
+
+void
+MainWindow::onGainUpdate() {
+  _gain->setText(QString::number(10*std::log10(_receiver->gain())));
 }
 
 void

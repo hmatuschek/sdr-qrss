@@ -13,8 +13,14 @@ class QRSS: public gui::SpectrumProvider, public sdr::Sink<int16_t>
   Q_OBJECT
 
 public:
+  /** Constructor.
+   * @param Fbfo Specifies the BFO frequency in Hz.
+   * @param dotlen Specifies "dot length" in s. Each FFT frame will be obtained from @c Fs*dotlen/2
+   *        samples. Hence by increasing the dot length, the frequency resolution will be
+   *        increased.
+   * @param width Specifies the width of the visible spectrum round the BFO frequency in Hz. */
   QRSS(double Fbfo=800, double dotlen=3, double width=200);
-
+  /** Destructor. */
   virtual ~QRSS();
 
   /** Implements the SpectrumProvider interface. */
@@ -36,10 +42,13 @@ public:
   /** Sets the BFO frequency. */
   void setFbfo(double F);
 
+  /** Returns the dot length in s. */
   double dotLength() const;
+  /** Sets the dot length in s. */
   void setDotLength(double len);
-
+  /** Returns the spectrum width in Hz. */
   double width() const;
+  /** Sets the spectrum width in Hz. */
   void setWidth(double width);
 
 protected:
@@ -53,7 +62,7 @@ protected:
   double _dotlen;
   /** Width of the spectrum. */
   double _width;
-
+  /** The current input sample-rate. */
   double _samplerate;
   /** Removes the _Fbfo from the input signal. */
   FreqShiftBase<int16_t> _fshift;

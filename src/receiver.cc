@@ -123,19 +123,26 @@ IQAudioSource::onViewDeleted() {
  * Implementation of Receiver
  * ********************************************************************************************* */
 Receiver::Receiver(QObject *parent) :
-  QObject(parent), _sourceType(AUDIO_SOURCE), _source(0), _qrss(800, 3, 300), _monitor(true),
+  QObject(parent), _sourceType(AUDIO_SOURCE), _source(0), _agc(), _qrss(800, 3, 300), _monitor(true),
   _audioSink(), _settings("com.github.hmatuschek", "sdr-qrss")
 {
-  // Load settings from config files
-  _qrss.setFbfo(_settings.value("Fbfo", 800).toDouble());
-  _qrss.setDotLength(_settings.value("dotLength", 3).toDouble());
-  _qrss.setWidth(_settings.value("width", 300).toDouble());
+  // Config AGC
+  _agc.enable(_settings.value("agc", false).toBool());
+  _agc.setGain(_settings.value("gain", 1.0).toDouble());
+
+  // Config QRSS node
+  _qrss.setFbfo(_settings.value("Fbfo", 800.0).toDouble());
+  _qrss.setDotLength(_settings.value("dotLength", 3.0).toDouble());
+  _qrss.setWidth(_settings.value("width", 300.0).toDouble());
+
+  // Config monitor
   _monitor = _settings.value("monitor", true).toBool();
 
   _source = new AudioSource(_qrss.Fbfo(), _qrss.width());
-  _source->source()->connect(&_qrss);
+  _source->source()->connect(&_agc);
+  _agc.connect(&_qrss, true);
   if (_monitor) {
-    _source->source()->connect(&_audioSink);
+    _agc.connect(&_audioSink, true);
   }
 }
 
@@ -159,10 +166,7 @@ Receiver::setSourceType(SourceType source) {
     _source = new IQAudioSource(_qrss.Fbfo(), _qrss.width()); break;
   }
   // Connect to QRSS node
-  _source->source()->connect(&_qrss);
-  if (_monitor) {
-    _source->source()->connect(&_audioSink);
-  }
+  _source->source()->connect(&_agc);
 }
 
 QWidget *
@@ -209,6 +213,28 @@ Receiver::setSpectrumWidth(double width) {
 }
 
 bool
+Receiver::agcEnabled() const {
+  return _agc.enabled();
+}
+
+void
+Receiver::enableAGC(bool enabled) {
+  _agc.enable(enabled);
+  _settings.setValue("agc", enabled);
+}
+
+double
+Receiver::gain() const {
+  return _agc.gain();
+}
+
+void
+Receiver::setGain(double gain) {
+  _agc.setGain(gain);
+  _settings.setValue("gain", gain);
+}
+
+bool
 Receiver::monitor() const {
   return _monitor;
 }
@@ -217,9 +243,9 @@ void
 Receiver::setMonitor(bool enabled) {
   if (enabled && !_monitor) {
     // enable monitoring
-    _source->source()->connect(&_audioSink);
+    _agc.connect(&_audioSink, true);
   } else if (!enabled && _monitor) {
-    _source->source()->disconnect(&_audioSink);
+    _agc.disconnect(&_audioSink);
   }
   _monitor = enabled;
   _settings.setValue("monitor", enabled);
