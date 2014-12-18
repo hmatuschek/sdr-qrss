@@ -77,8 +77,8 @@ MainWindow::MainWindow(Receiver *rx, QWidget *parent) :
   _gainTimer.setSingleShot(false);
 
   QVBoxLayout *gainLayout = new QVBoxLayout();
-  gainLayout->addWidget(agc);
   gainLayout->addWidget(_gain);
+  gainLayout->addWidget(agc);
   cfgLayout->addRow("Gain [dB]", gainLayout);
 
   QCheckBox *monitor = new QCheckBox();

@@ -1,4 +1,4 @@
-set(sdr_qrss_SOURCES main.cc options.cc
+set(sdr_qrss_SOURCES main.cc
     qrss.cc receiver.cc mainwindow.cc)
 set(sdr_qrss_MOC_HEADERS
     qrss.hh receiver.hh mainwindow.hh)
