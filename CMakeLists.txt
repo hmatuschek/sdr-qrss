@@ -13,6 +13,7 @@ find_package(PortAudio REQUIRED)
 find_package(RTLSDR REQUIRED)
 
 find_package(Libsdr)
+find_package(LibsdrGui)
 
 ADD_DEFINITIONS(${Qt5Widgets_DEFINITIONS})
 
@@ -44,6 +45,20 @@ ELSE(NOT LIBSDR_FOUND)
  SET(LIBS ${LIBS} ${LIBSDR_LIBRARIES})
 ENDIF(NOT LIBSDR_FOUND)
 
+# If libsdr-gui cannot be found, compile and link to libsdr-gui shipped along
+# with this sources...
+IF(NOT LIBSDR_GUI_FOUND)
+ MESSAGE(STATUS "libsdr-gui not found: Build them too...")
+ INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}/libsdr-gui/src")
+ INCLUDE_DIRECTORIES("${PROJECT_BINARY_DIR}/libsdr-gui/src")
+ LINK_DIRECTORIES("${PROJECT_BINARY_DIR}/libsdr-gui/src")
+ SET(LIBS ${LIBS} sdr-gui)
+ SET(SDR_WITH_FFTW ON)
+ELSE(NOT LIBSDR_GUI_FOUND)
+ INCLUDE_DIRECTORIES(${LIBSDR_GUI_INCLUDE_DIRS})
+ SET(LIBS ${LIBS} ${LIBSDR_GUI_LIBRARIES})
+ENDIF(NOT LIBSDR_GUI_FOUND)
+
 # Set compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -O0 -ggdb")
@@ -71,6 +86,10 @@ add_subdirectory(src)
 # ... also compile libsdr if not found:
 IF(NOT LIBSDR_FOUND)
   add_subdirectory(libsdr/src)
+ENDIF(NOT LIBSDR_FOUND)
+# ... and compile libsdr-gui if not found:
+IF(NOT LIBSDR_FOUND)
+  add_subdirectory(libsdr-gui/src)
 ENDIF(NOT LIBSDR_FOUND)
 
 
